@@ -99,7 +99,7 @@ const TodayTrendsComponent = () => {
             accessToken;
         return requestURL;
     };
-    $.getJSON(getUrl('nextact'), function (json) {
+    $.getJSON(getUrl('nextActivation'), function (json) {
         console.log(json.result);
         json.result ? setNextActivation(json.result) : setNextActivation('9:40am');
     });

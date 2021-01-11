@@ -116,7 +116,7 @@ function DashboardComponent() {
                     <MiniCardComponent
                         className={classes.miniCardContainer}
                         title='Temperatura actual del café'
-                        value={`${coffeTemp}°`}
+                        value={`${coffeTemp.toFixed(2)}°`}
                     />
                     <MiniCardComponent
                         className={classes.miniCardContainer}
