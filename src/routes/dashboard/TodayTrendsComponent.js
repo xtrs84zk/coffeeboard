@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Column, Row } from 'simple-flexbox';
 import { createUseStyles, useTheme } from 'react-jss';
 import LineChart from 'react-svg-line-chart';
+import $ from 'jquery';
 
 let retrievedData = localStorage.getItem('data');
 let data2 = JSON.parse(retrievedData);
 let data;
-if(data2){
+if (data2) {
     data = data2;
-}else {
+} else {
     data = [];
     for (let x = 1; x <= new Date().getDate(); x++) {
         data.push({ x: x, y: Math.floor(Math.random() * 80) });
@@ -82,10 +83,26 @@ const useStyles = createUseStyles((theme) => ({
     }
 }));
 
-function TodayTrendsComponent() {
+const TodayTrendsComponent = () => {
     const theme = useTheme();
     const classes = useStyles({ theme });
-
+    const [nextActivation, setNextActivation] = useState('7:40am');
+    const accessToken = process.env.REACT_APP_PHOTON_ACCESS_TOKEN;
+    const deviceID = process.env.REACT_APP_PHOTON_DEVICE_ID;
+    const getUrl = (var2get) => {
+        let requestURL =
+            'https://api.particle.io/v1/devices/' +
+            deviceID +
+            '/' +
+            var2get +
+            '/?access_token=' +
+            accessToken;
+        return requestURL;
+    };
+    $.getJSON(getUrl('nextact'), function (json) {
+        console.log(json.result);
+        json.result ? setNextActivation(json.result) : setNextActivation('9:40am');
+    });
     function renderLegend(color, title) {
         return (
             <Row vertical='center'>
@@ -148,7 +165,7 @@ function TodayTrendsComponent() {
                 <div />
             </Column>
             <Column flexGrow={3} flexBasis='342px' breakpoints={{ 1024: classes.stats }}>
-                {renderStat('Próxima activación', '7:40am')}
+                {renderStat('Próxima activación', nextActivation)}
                 {renderStat('Última activación', '4:26pm')}
                 {renderStat(
                     'Hora actual',
@@ -160,6 +177,6 @@ function TodayTrendsComponent() {
             </Column>
         </Row>
     );
-}
+};
 
 export default TodayTrendsComponent;
