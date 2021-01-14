@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Column, Row } from 'simple-flexbox';
 import { createUseStyles, useTheme } from 'react-jss';
 import LineChart from 'react-svg-line-chart';
-import $ from 'jquery';
+import axios from 'axios';
 
 let retrievedData = localStorage.getItem('data');
 let data2 = JSON.parse(retrievedData);
@@ -83,26 +83,39 @@ const useStyles = createUseStyles((theme) => ({
     }
 }));
 
-const TodayTrendsComponent = () => {
+const TodayTrendsComponent = ({ coffeeTempHistory }) => {
     const theme = useTheme();
     const classes = useStyles({ theme });
     const [nextActivation, setNextActivation] = useState('7:40am');
     const accessToken = process.env.REACT_APP_PHOTON_ACCESS_TOKEN;
     const deviceID = process.env.REACT_APP_PHOTON_DEVICE_ID;
-    const getUrl = (var2get) => {
-        let requestURL =
-            'https://api.particle.io/v1/devices/' +
-            deviceID +
-            '/' +
-            var2get +
-            '/?access_token=' +
-            accessToken;
-        return requestURL;
+
+    const getNextActivation = () => {
+        let requestURL = `https://api.particle.io/v1/devices/${deviceID}/nextActivation/?access_token=${accessToken}`;
+        axios
+            .get(requestURL)
+            .then(({ data }) => {
+                setNextActivation(data.result);
+            })
+            .catch(() => {
+                setNextActivation('9:40am');
+            });
     };
-    $.getJSON(getUrl('nextActivation'), function (json) {
-        console.log(json.result);
-        json.result ? setNextActivation(json.result) : setNextActivation('9:40am');
-    });
+
+    // Update coffe temperature every 10 seconds
+    useEffect(() => {
+        getNextActivation();
+        const interval = setInterval(() => {
+            getNextActivation();
+        }, 1000000);
+        return () => clearInterval(interval);
+        // eslint-disable-next-line
+    }, []);
+
+    useEffect(() => {
+        
+    }, []);
+
     function renderLegend(color, title) {
         return (
             <Row vertical='center'>
@@ -143,17 +156,22 @@ const TodayTrendsComponent = () => {
                 <Row wrap horizontal='space-between'>
                     <Column>
                         <span className={classes.graphTitle}>
-                            Temperatura del café los últimos días
+                            Temperatura del café recientemente
                         </span>
                         <span className={classes.graphSubtitle}>
-                            a día {`${new Date().toISOString().split('T')[0]}`}
+                            graficando desde{' '}
+                            {`${new Date().getHours() % 12}:${
+                                new Date().getMinutes().length > 1
+                                    ? new Date().getMinutes()
+                                    : `0${new Date().getMinutes()}`
+                            }${new Date().getHours() / 12 > 1 ? 'pm' : 'am'}`}
                         </span>
                     </Column>
                     {renderLegend(theme.color.lightBlue, 'Today')}
                 </Row>
                 <div className={classes.graphContainer}>
                     <LineChart
-                        data={data}
+                        data={coffeeTempHistory}
                         viewBoxWidth={500}
                         pointsStrokeColor={theme.color.lightBlue}
                         areaColor={theme.color.lightBlue}

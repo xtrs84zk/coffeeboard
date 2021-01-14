@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Column, Row } from 'simple-flexbox';
 import { createUseStyles } from 'react-jss';
 import MiniCardComponent from 'components/cards/MiniCardComponent';
 import TodayTrendsComponent from './TodayTrendsComponent';
-import $ from 'jquery';
+import axios from 'axios';
 
 const useStyles = createUseStyles({
     cardsContainer: {
@@ -44,55 +44,75 @@ const useStyles = createUseStyles({
     }
 });
 
-const WeatherSLW = async ({ setGrados }) => {
-    const api_call = await fetch(
-        `//api.openweathermap.org/data/2.5/weather?lat=25.4237&lon=-101.037&appid=${process.env.REACT_APP_OMW_TOKEN}&units=metric`
-    );
-    const data = await api_call.json();
-    data.main?.temp ? setGrados(data.main.temp) : setGrados(0);
-};
-
-function DashboardComponent() {
+const DashboardComponent = () => {
     const [grados, setGrados] = useState(0);
     const classes = useStyles();
     const [isTheCoffeeBoiling, setIsCoffeeBoiling] = useState(false);
     const [coffeTemp, setCoffeTemp] = useState(0);
-    // WeatherSLW({
-    //     setGrados
-    // });
+    const [coffeeTempHistory, setCoffeeTempHistory] = useState([{ x: 0, y: 0 }]);
     const accessToken = process.env.REACT_APP_PHOTON_ACCESS_TOKEN;
     const deviceID = process.env.REACT_APP_PHOTON_DEVICE_ID;
     const url = 'https://api.particle.io/v1/devices/' + deviceID + '/boilCoffee';
 
     const boilCoffee = () => {
-        console.log('post is being made');
-        $.post(url, {
-            params: 'on',
-            access_token: accessToken
-        });
+        axios
+            .post(url, {
+                params: 'on',
+                access_token: accessToken
+            })
+            .catch(() => {});
         setIsCoffeeBoiling(true);
     };
+
     const stopBoilingCoffee = () => {
-        $.post(url, {
-            params: 'off',
-            access_token: accessToken
-        });
+        axios
+            .post(url, {
+                params: 'off',
+                access_token: accessToken
+            })
+            .catch(() => {});
         setIsCoffeeBoiling(false);
     };
-    const getUrl = (var2get) => {
-        let requestURL =
-            'https://api.particle.io/v1/devices/' +
-            deviceID +
-            '/' +
-            var2get +
-            '/?access_token=' +
-            accessToken;
-        return requestURL;
+
+    // Get coffe temperature from endpoitn
+    const getCoffeTemp = () => {
+        const requestURL = `https://api.particle.io/v1/devices/${deviceID}/coffeetemp/?access_token=${accessToken}`;
+        axios
+            .get(requestURL)
+            .then(({ data }) => {
+                data !== undefined && setCoffeTemp(data.result);
+                coffeeTempHistory.push({ x: coffeeTempHistory.length, y: data.result });
+                setCoffeeTempHistory(coffeeTempHistory);
+            })
+            .catch(() => {
+                setCoffeTemp(0);
+            });
     };
-    $.getJSON(getUrl('coffeetemp'), function (json) {
-        console.log(json.result);
-        json.result ? setCoffeTemp(json.result) : setCoffeTemp(0);
-    });
+
+    // Update coffe temperature every 10 seconds
+    useEffect(() => {
+        getCoffeTemp();
+        const interval = setInterval(() => {
+            getCoffeTemp();
+        }, 10000);
+
+        return () => clearInterval(interval);
+        // eslint-disable-next-line
+    }, []);
+
+    // Update weather just on mount
+    useEffect(() => {
+        let requestURL = `//api.openweathermap.org/data/2.5/weather?lat=25.4237&lon=-101.037&appid=${process.env.REACT_APP_OMW_TOKEN}&units=metric`;
+        axios
+            .get(requestURL)
+            .then(({ data }) => {
+                data.main !== undefined && setGrados(data.main.temp);
+            })
+            .catch(() => {
+                setGrados(0);
+            });
+    }, [setGrados]);
+
     return (
         <Column>
             <Row
@@ -121,7 +141,7 @@ function DashboardComponent() {
                     <MiniCardComponent
                         className={classes.miniCardContainer}
                         title='Temperatura recomendada de café'
-                        value={`${(((grados * 80) / 100) * 15 + 48).toFixed(2)} C°`}
+                        value={`${(((grados * 15) / 100) * 15 + 48).toFixed(2)} C°`}
                     />{' '}
                     <MiniCardComponent
                         className={classes.miniCardContainer}
@@ -164,7 +184,7 @@ function DashboardComponent() {
                 </Row>{' '}
             </Row>{' '}
             <div className={classes.todayTrends}>
-                <TodayTrendsComponent />
+                <TodayTrendsComponent coffeeTempHistory={coffeeTempHistory} />
             </div>{' '}
             <Row
                 horizontal='space-between'
@@ -175,6 +195,6 @@ function DashboardComponent() {
             ></Row>{' '}
         </Column>
     );
-}
+};
 
 export default DashboardComponent;
