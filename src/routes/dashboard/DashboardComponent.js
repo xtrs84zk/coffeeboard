@@ -57,9 +57,9 @@ function DashboardComponent() {
     const classes = useStyles();
     const [isTheCoffeeBoiling, setIsCoffeeBoiling] = useState(false);
     const [coffeTemp, setCoffeTemp] = useState(0);
-    WeatherSLW({
-        setGrados
-    });
+    // WeatherSLW({
+    //     setGrados
+    // });
     const accessToken = process.env.REACT_APP_PHOTON_ACCESS_TOKEN;
     const deviceID = process.env.REACT_APP_PHOTON_DEVICE_ID;
     const url = 'https://api.particle.io/v1/devices/' + deviceID + '/boilCoffee';
