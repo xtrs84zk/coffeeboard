@@ -1,6 +1,5 @@
 import React, { useContext, useState } from 'react';
 import { string } from 'prop-types';
-import { useHistory } from 'react-router-dom';
 import { Row } from 'simple-flexbox';
 import { createUseStyles, useTheme } from 'react-jss';
 import { SidebarContext } from 'hooks/useSidebar';
@@ -60,7 +59,6 @@ const useStyles = createUseStyles((theme) => ({
 }));
 
 function HeaderComponent() {
-    const { push } = useHistory();
     const { currentItem } = useContext(SidebarContext);
     const theme = useTheme();
     const classes = useStyles({ theme });
@@ -99,10 +97,6 @@ function HeaderComponent() {
             title = '';
     }
 
-    function onSettingsClick() {
-        push(SLUGS.settings);
-    }
-
     return (
         <Row className={classes.container} vertical='center' horizontal='space-between'>
             <span className={classes.title}>{title}</span>
@@ -124,12 +118,12 @@ function HeaderComponent() {
                     }
                     options={[
                         {
-                            label: 'Settings',
-                            onClick: onSettingsClick
+                            label: 'Portafolio',
+                            onClick: () => (window.location.href = 'https://javiersanchez.dev')
                         },
                         {
                             label: 'Logout',
-                            onClick: () => console.log('logout')
+                            onClick: () => (window.location.href = 'https://twitter.com')
                         }
                     ]}
                     position={{

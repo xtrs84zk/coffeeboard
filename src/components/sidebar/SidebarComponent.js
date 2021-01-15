@@ -2,10 +2,7 @@ import React from 'react';
 import { createUseStyles, useTheme } from 'react-jss';
 import { useHistory } from 'react-router-dom';
 import SLUGS from 'resources/slugs';
-import {
-    IconLogout,
-    IconSubscription,
-} from 'assets/icons';
+import { IconSubscription } from 'assets/icons';
 import { convertSlugToUrl } from 'resources/utilities';
 import LogoComponent from './LogoComponent';
 import Menu from './MenuComponent';
@@ -26,10 +23,6 @@ function SidebarComponent() {
     const classes = useStyles({ theme });
     const isMobile = window.innerWidth <= 1080;
 
-    async function logout() {
-        push(SLUGS.login);
-    }
-
     function onClick(slug, parameters = {}) {
         push(convertSlugToUrl(slug, parameters));
     }
@@ -46,8 +39,6 @@ function SidebarComponent() {
                 onClick={() => onClick(SLUGS.dashboard)}
             />
             <div className={classes.separator}></div>
-
-            <MenuItem id='logout' title='Logout' icon={IconLogout} onClick={logout} />
         </Menu>
     );
 }
