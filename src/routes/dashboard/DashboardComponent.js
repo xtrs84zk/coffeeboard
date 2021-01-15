@@ -51,28 +51,33 @@ const DashboardComponent = () => {
     const [coffeTemp, setCoffeTemp] = useState(0);
     const [distance, setDistance] = useState(0);
     const [recommendedTemp, setRecommendedTemp] = useState(0);
-    const [coffeeTempHistory, setCoffeeTempHistory] = useState([{ x: 0, y: 0 }]);
+    const [coffeeTempHistory, setCoffeeTempHistory] = useState([
+        {
+            x: 0,
+            y: 0
+        }
+    ]);
     const accessToken = process.env.REACT_APP_PHOTON_ACCESS_TOKEN;
     const deviceID = process.env.REACT_APP_PHOTON_DEVICE_ID;
-    const url = 'https://api.particle.io/v1/devices/' + deviceID + '/boilCoffee';
-
+    const url = `https://api.particle.io/v1/devices/${deviceID}/boilCoffee`;
+    const config = {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    };
     const boilCoffee = () => {
-        axios
-            .post(url, {
-                params: 'on',
-                access_token: accessToken
-            })
-            .catch(() => {});
+        const params = new URLSearchParams();
+        params.append('access_token', accessToken);
+        params.append('params', 'on');
+        axios.post(url, params, config).catch(() => {});
         setIsCoffeeBoiling(true);
     };
 
     const stopBoilingCoffee = () => {
-        axios
-            .post(url, {
-                params: 'off',
-                access_token: accessToken
-            })
-            .catch(() => {});
+        const params = new URLSearchParams();
+        params.append('access_token', accessToken);
+        params.append('params', 'off');
+        axios.post(url, params, config).catch(() => {});
         setIsCoffeeBoiling(false);
     };
 
@@ -83,7 +88,10 @@ const DashboardComponent = () => {
             .get(requestURL)
             .then(({ data }) => {
                 data !== undefined && setCoffeTemp(data.result);
-                coffeeTempHistory.push({ x: coffeeTempHistory.length, y: data.result });
+                coffeeTempHistory.push({
+                    x: coffeeTempHistory.length,
+                    y: data.result
+                });
                 setCoffeeTempHistory(coffeeTempHistory);
             })
             .catch(() => {
@@ -102,7 +110,9 @@ const DashboardComponent = () => {
     useEffect(() => {
         getCoffeTemp();
         const interval = setInterval(() => {
-            setRecommendedTemp((58 + ((grados * 17) / 90)) < 85 ? (58 + ((grados * 17) / 90)).toFixed(2) : 80);
+            setRecommendedTemp(
+                58 + (grados * 17) / 90 < 85 ? (58 + (grados * 17) / 90).toFixed(2) : 80
+            );
             getCoffeTemp();
         }, 10000);
 
@@ -147,7 +157,7 @@ const DashboardComponent = () => {
                         className={classes.miniCardContainer}
                         title='Temperatura actual del café'
                         value={`${coffeTemp.toFixed(2)}°`}
-                    />
+                    />{' '}
                     <MiniCardComponent
                         className={classes.miniCardContainer}
                         title='Temperatura recomendada de café'
@@ -169,7 +179,9 @@ const DashboardComponent = () => {
                     }}
                 >
                     <div
-                        style={{ padding: '0px' }}
+                        style={{
+                            padding: '0px'
+                        }}
                         onClick={() => {
                             isTheCoffeeBoiling
                                 ? stopBoilingCoffee()
@@ -183,7 +195,7 @@ const DashboardComponent = () => {
                             title={isTheCoffeeBoiling ? 'Detener' : 'Calentar'}
                             value='café'
                         />
-                    </div>
+                    </div>{' '}
                     <MiniCardComponent
                         className={classes.miniCardContainer}
                         title={'Enero'}
@@ -192,7 +204,7 @@ const DashboardComponent = () => {
                 </Row>{' '}
             </Row>{' '}
             <div className={classes.todayTrends}>
-                <TodayTrendsComponent coffeeTempHistory={coffeeTempHistory} distance={distance} />
+                <TodayTrendsComponent coffeeTempHistory={coffeeTempHistory} distance={distance} />{' '}
             </div>{' '}
             <Row
                 horizontal='space-between'

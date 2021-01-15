@@ -4,19 +4,6 @@ import { createUseStyles, useTheme } from 'react-jss';
 import LineChart from 'react-svg-line-chart';
 import axios from 'axios';
 
-let retrievedData = localStorage.getItem('data');
-let data2 = JSON.parse(retrievedData);
-let data;
-if (data2) {
-    data = data2;
-} else {
-    data = [];
-    for (let x = 1; x <= new Date().getDate(); x++) {
-        data.push({ x: x, y: Math.floor(Math.random() * 80) });
-    }
-    localStorage.setItem('data', JSON.stringify(data));
-}
-
 const useStyles = createUseStyles((theme) => ({
     container: {
         backgroundColor: '#FFFFFF',
