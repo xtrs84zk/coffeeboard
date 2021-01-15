@@ -4,7 +4,6 @@ import { useHistory } from 'react-router-dom';
 import SLUGS from 'resources/slugs';
 import {
     IconLogout,
-    IconSettings,
     IconSubscription,
 } from 'assets/icons';
 import { convertSlugToUrl } from 'resources/utilities';
@@ -47,12 +46,6 @@ function SidebarComponent() {
                 onClick={() => onClick(SLUGS.dashboard)}
             />
             <div className={classes.separator}></div>
-            <MenuItem
-                id={SLUGS.settings}
-                title='Settings'
-                icon={IconSettings}
-                onClick={() => onClick(SLUGS.settings)}
-            />
 
             <MenuItem id='logout' title='Logout' icon={IconLogout} onClick={logout} />
         </Menu>

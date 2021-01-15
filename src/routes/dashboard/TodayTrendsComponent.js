@@ -83,14 +83,14 @@ const useStyles = createUseStyles((theme) => ({
     }
 }));
 
-const TodayTrendsComponent = ({ coffeeTempHistory }) => {
+const TodayTrendsComponent = ({ coffeeTempHistory, distance }) => {
     const theme = useTheme();
     const classes = useStyles({ theme });
     const [nextActivation, setNextActivation] = useState('7:40am');
     const accessToken = process.env.REACT_APP_PHOTON_ACCESS_TOKEN;
     const deviceID = process.env.REACT_APP_PHOTON_DEVICE_ID;
 
-    const getNextActivation = () => {
+    const getActivations = () => {
         let requestURL = `https://api.particle.io/v1/devices/${deviceID}/nextActivation/?access_token=${accessToken}`;
         axios
             .get(requestURL)
@@ -100,21 +100,20 @@ const TodayTrendsComponent = ({ coffeeTempHistory }) => {
             .catch(() => {
                 setNextActivation('9:40am');
             });
+        requestURL = `https://api.particle.io/v1/devices/${deviceID}/lastActivation/?access_token=${accessToken}`;
     };
 
     // Update coffe temperature every 10 seconds
     useEffect(() => {
-        getNextActivation();
+        getActivations();
         const interval = setInterval(() => {
-            getNextActivation();
-        }, 1000000);
+            getActivations();
+        }, 100000);
         return () => clearInterval(interval);
         // eslint-disable-next-line
     }, []);
 
-    useEffect(() => {
-        
-    }, []);
+    useEffect(() => {}, []);
 
     function renderLegend(color, title) {
         return (
@@ -184,7 +183,11 @@ const TodayTrendsComponent = ({ coffeeTempHistory }) => {
             </Column>
             <Column flexGrow={3} flexBasis='342px' breakpoints={{ 1024: classes.stats }}>
                 {renderStat('Próxima activación', nextActivation)}
-                {renderStat('Última activación', '4:26pm')}
+                {renderStat(
+                    distance < 7
+                        ? 'Se ha detectado una jarra, puede encender la cafetera'
+                        : 'No se ha detectado una jarra'
+                )}
                 {renderStat(
                     'Hora actual',
                     `${new Date().getHours() % 12}:${new Date().getMinutes()}${
